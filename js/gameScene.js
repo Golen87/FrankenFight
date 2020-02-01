@@ -4,13 +4,25 @@ class GameScene extends Phaser.Scene {
 	}
 
 	create() {
-		this.ground = this.matter.add.image(400, 550, 'platform', null, { restitution: 0.4, isStatic: true });
+		this.matter.world.setBounds(0, 0, this.W, this.H, 1000);
 
-		this.player = new Player(this, 400, 100);
+		let ground1 = this.matter.add.image(this.CX, this.H*3/4, 'platform', null, { restitution: 0.4, isStatic: true });
+
+		this.player = new Player(this, this.CX, this.CY);
 	}
 
 	update(time, delta) {
 		this.player.update(time, delta);
+	}
+
+
+	get W() { return this.cameras.main.displayWidth; }
+	get H() { return this.cameras.main.displayHeight; }
+	get CX() { return this.cameras.main.centerX; }
+	get CY() { return this.cameras.main.centerY; }
+
+	fitToScreen(image) {
+		image.setScale(Math.max(this.W / image.width, this.H / image.height));
 	}
 }
 

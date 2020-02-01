@@ -25,6 +25,7 @@ class PreloadScene extends Phaser.Scene {
 		this.load.image('leg_right1', 'assets/sprites/leg_right1.png');
 		this.load.image('leg_right2', 'assets/sprites/leg_right2.png');
 		this.load.image('platform', 'assets/sprites/platform.png');
+		this.load.image('circle', 'assets/sprites/circle.png');
 
 		//this.load.image('detrius', 'assets/images/icons/Detrius_128.png');
 		//this.load.audio('ambience_main_menu', [ 'assets/audio/ambience_main_menu.ogg' ] );
