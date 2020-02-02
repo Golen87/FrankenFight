@@ -12,7 +12,7 @@ class Player {
 			Bodies.circle(0, 100, 20, { isSensor: true, label: 'feet' })
 		]});
 
-
+		this.playerNumber = playerNumber;
 		const frame = playerNumber-1;
 		this.legLeft1 = scene.matter.add.image(x, y, 'legs', frame, {isSensor: true, density: 0.00001});
 		this.legLeft2 = scene.matter.add.image(x, y, 'legs', frame, {isSensor: true, density: 0.00001});
@@ -163,6 +163,11 @@ class Player {
 		this.keyAttack.on('down', this.onAttack, this);
 
 		this.particles = scene.add.particles('blood');
+
+		this.jump1 = scene.sound.add('toss', {'volume': 0.3});
+		this.jump2 = scene.sound.add('toss_soft', {'volume': 0.3});
+		this.drip1 = scene.sound.add('drip1');
+		this.drip2 = scene.sound.add('drip2');
 	}
 
 	addJointPlus(bodyA, offsetA, bodyB, offsetB, offsetA2, offsetB2, stiffnessFactor=1) {
@@ -349,6 +354,8 @@ class Player {
         	x: x,
         	y: y
 		});
+		const bleedEffects = [this.drip1, this.drip2];
+		bleedEffects[Math.floor(Math.random()*bleedEffects.length)].play();
 	}
 
 
@@ -391,6 +398,12 @@ class Player {
 		if (!this.isAlive()) return;
 
 		if (this.isGrounded()) {
+			if (this.playerNumber % 2 === 0) {
+				this.jump1.play();
+			} else {
+				this.jump2.play();
+			}
+
 			this.torso.setVelocity(0, -400);
 		}
 	}

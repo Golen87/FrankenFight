@@ -42,8 +42,8 @@ class PreloadScene extends Phaser.Scene {
 		//this.load.audio('detach2', 'detach2.ogg');
 		//this.load.audio('detach3', 'detach3.ogg');
 		//this.load.audio('drill', 'drill.ogg');
-		//this.load.audio('drip1', 'drip1.ogg');
-		//this.load.audio('drip2', 'drip2.ogg');
+		this.load.audio('drip1', 'assets/audio/gameplay/drip1.ogg');
+		this.load.audio('drip2', 'assets/audio/gameplay/drip2.ogg');
 		//this.load.audio('extinguish', 'extinguish.wav');
 		//this.load.audio('firework1', 'firework1.wav');
 		//this.load.audio('firework2', 'firework2.wav');
@@ -85,8 +85,8 @@ class PreloadScene extends Phaser.Scene {
 		//this.load.audio('thud_bigger', 'thud_bigger.wav');
 		//this.load.audio('thud_big', 'thud_big.wav');
 		//this.load.audio('thunder', 'thunder.wav');
-		//this.load.audio('toss', 'toss.ogg');
-		//this.load.audio('toss_soft', 'toss_soft.ogg');
+		this.load.audio('toss', 'assets/audio/gameplay/toss.ogg');
+		this.load.audio('toss_soft', 'assets/audio/gameplay/toss_soft.ogg');
 		//this.load.audio('woosh_big', 'woosh_big.ogg');
 		//this.load.audio('woosh', 'woosh.ogg');
 		//this.load.audio('woosh_soft', 'woosh_soft.wav');
