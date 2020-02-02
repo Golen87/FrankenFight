@@ -9,7 +9,7 @@ class Player {
 			Bodies.circle(0, 0, 130),
 			Bodies.circle(0, -200, 120),
 			Bodies.rectangle(0, 50, 150, 150),
-			Bodies.circle(0, 100, 20, { isSensor: true, label: 'feet' })
+			Bodies.circle(0, 100, 40, { isSensor: true, label: 'feet' })
 		]});
 
 		this.playerNumber = playerNumber;
@@ -146,7 +146,7 @@ class Player {
 		this.grounded = false;
 		this.maxHealth = 10;
 		this.health = this.maxHealth;
-		this.gameOver = false;
+		this.running = true;
 
 		//this.addArm();
 		//this.addArm();
@@ -181,8 +181,8 @@ class Player {
 
 		this.particles = scene.add.particles('blood');
 
-		this.jump1 = scene.sound.add('toss', {'volume': 0.5});
-		this.jump2 = scene.sound.add('toss_soft', {'volume': 0.5});
+		this.jump1 = scene.sound.add('toss');
+		this.jump2 = scene.sound.add('toss_soft');
 		this.crow = scene.sound.add('crow');
 		this.drip = [
 			scene.sound.add('drip1'),
@@ -210,9 +210,9 @@ class Player {
 			scene.sound.add('shank3'),
 		];
 		this.walking = [
-			scene.sound.add('crackle1', {'volume': 0.5}),
-			scene.sound.add('crackle2', {'volume': 0.5}),
-			scene.sound.add('crackle3', {'volume': 0.5}),
+			scene.sound.add('crackle1', {'volume': 0.3}),
+			scene.sound.add('crackle2', {'volume': 0.3}),
+			scene.sound.add('crackle3', {'volume': 0.3}),
 		];
 	}
 
@@ -270,7 +270,7 @@ class Player {
 	/* Limb management */
 
 	isAlive() {
-		return this.head.visible;
+		return this.head.visible && this.running;
 	}
 
 	isActive(part) {
@@ -392,16 +392,8 @@ class Player {
 			this.crow.play();
 			this.head.setVisible(false);
 			this.scene.createHead(this.head);
-			if (!this.gameOver) {
-				// Display word "Game Over" at center of the screen game
-				let gameOver = this.scene.add.image(this.scene.cameras.main.displayWidth / 2,
-					this.scene.cameras.main.displayHeight / 2, this.gameOverTag);
-				// Set z-index just in case your text show behind the background.
-				gameOver.setDepth(1);
-				gameOver.setScale(0.7, 0.7);
-				this.gameOver = true;
-			}
-			
+
+			this.scene.gameOver(this.gameOverTag);
 		}
 	}
 
@@ -442,15 +434,12 @@ class Player {
 
 		let speed = 4 * (1 + this.getActiveLegs().length);
 
-		if (this.isAlive() && !this.gameOver) {
+		if (this.isAlive()) {
 			if (this.keyUp.isDown) {
+				this.torso.setVelocity(0, -10);
 			}
-			if (this.keyDown.isDown) {
-				if (this.gameOver) {
-					console.log("test")
-				this.scene.restart();
-			}
-			}
+			//if (this.keyDown.isDown) {
+			//}
 			if (this.keyLeft.isDown) {
 				this.torso.setVelocityX(-speed);
 				this.playSound(this.walking);
@@ -474,7 +463,8 @@ class Player {
 				this.jump2.play();
 			}
 
-			this.torso.setVelocity(0, -400);
+			//this.torso.setVelocity(0, -400);
+			//console.log(this.torso.body);
 		}
 	}
 

@@ -195,6 +195,30 @@ class GameScene extends Phaser.Scene {
 		limb.image.scaleX = head.scaleX;
 	}
 
+	gameOver(tag) {
+		this.player1.running = false;
+		this.player2.running = false;
+		this.matter.world.engine.timing.timeScale = 0.05;
+
+		this.addEvent(1500, function() {
+			// Display word "Game Over" at center of the screen game
+			let gameOver = this.add.image(this.CX, this.CY, tag);
+			gameOver.setScale(0.7);
+
+			this.addEvent(2500, function() {
+				this.scene.start("GameScene");
+			});
+		});
+	}
+
+
+	addEvent(delay, callback) {
+		return this.time.addEvent({
+			delay: delay,
+			callback: callback,
+			callbackScope: this
+		});
+	}
 
 	get W() { return this.cameras.main.displayWidth; }
 	get H() { return this.cameras.main.displayHeight; }
