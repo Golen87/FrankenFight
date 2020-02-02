@@ -35,8 +35,14 @@ class GameScene extends Phaser.Scene {
 		this.player2 = new Player(this, this.W*3/4, this.CY, 2);
 
 		this.limbs = [];
-		this.limbs.push(new Limb(this, this.CX, this.CY, Math.floor(Math.random()*8)));
-		this.limbs.push(new Limb(this, this.CX, this.CY-50, Math.floor(Math.random()*8)));
+		this.limbs.push(new Limb(this, this.CX, this.CY, 'arms', Math.floor(Math.random()*8)));
+		this.limbs.push(new Limb(this, this.CX, this.CY, 'arms', Math.floor(Math.random()*8)));
+		this.limbs.push(new Limb(this, this.CX, this.CY, 'arms', Math.floor(Math.random()*8)));
+		this.limbs.push(new Limb(this, this.CX, this.CY, 'arms', Math.floor(Math.random()*8)));
+		this.limbs.push(new Limb(this, this.CX, this.CY-50, 'legs', Math.floor(Math.random()*7)));
+		this.limbs.push(new Limb(this, this.CX, this.CY-50, 'legs', Math.floor(Math.random()*7)));
+		this.limbs.push(new Limb(this, this.CX, this.CY-50, 'legs', Math.floor(Math.random()*7)));
+		this.limbs.push(new Limb(this, this.CX, this.CY-50, 'legs', Math.floor(Math.random()*7)));
 
 
 		// Collision
@@ -59,8 +65,8 @@ class GameScene extends Phaser.Scene {
 							const limb = this.limbs[l];
 							if (player.isBody(pair) && limb.isBody(pair)) {
 
-								if (limb.canPick()) {
-									const success = player.addArm(limb.image.frame.name);
+								if (limb.canPick() && player.isAlive()) {
+									const success = player.addLimb(limb);
 									if (success) {
 										limb.destroy();
 										this.limbs.splice(l, 1);
@@ -73,7 +79,13 @@ class GameScene extends Phaser.Scene {
 				}
 
 				if (pair.isSensor) {
-					console.log(names[objA], names[objB]);
+					if (objA == this.OBJ.GROUND && objB == this.OBJ.PLAYER) {
+						for (const player of [this.player1, this.player2]) {
+							if (player.isBody(pair)) {
+								player.setGrounded(true);
+							}
+						}
+					}
 				}
 				//if (objA == this.OBJ.GROUND && objB == this.OBJ.PLAYER) {
 				//	console.log(pair.bodyB.gameObject.label);
@@ -81,6 +93,25 @@ class GameScene extends Phaser.Scene {
 
 				//bodyA.gameObject.setTint(0xff0000);
 				//bodyB.gameObject.setTint(0x00ff00);
+			}
+		}, this);
+
+		this.matter.world.on('collisionend', function (event) {
+			for (let i = 0; i < event.pairs.length; i++) {
+				const pair = event.pairs[i];
+				const objA = pair.bodyA.parent.obj || 0;
+				const objB = pair.bodyB.parent.obj || 0;
+				const names = ["border", "ground", "player", "limb"];
+
+				if (pair.isSensor) {
+					if (objA == this.OBJ.GROUND && objB == this.OBJ.PLAYER) {
+						for (const player of [this.player1, this.player2]) {
+							if (player.isBody(pair)) {
+								player.setGrounded(false);
+							}
+						}
+					}
+				}
 			}
 		}, this);
 
@@ -124,12 +155,32 @@ class GameScene extends Phaser.Scene {
 		let angle = arm.body.angle;
 		let frame = arm.frame.name;
 
-		let limb = new Limb(this, pos.x, pos.y, frame);
+		let limb = new Limb(this, pos.x, pos.y, 'arms', frame);
 		this.limbs.push(limb);
 
 		//limb.image.angle = angle;
 		//limb.image.scaleX = arm.scaleX;
 		//limb.image.scaleY = arm.scaleY;
+	}
+
+	createLeg(leg) {
+		let pos = leg.body.position;
+		let angle = leg.body.angle;
+		let frame = leg.frame.name;
+
+		let limb = new Limb(this, pos.x, pos.y, 'legs', frame);
+		this.limbs.push(limb);
+
+		//limb.image.angle = angle;
+		//limb.image.scaleX = arm.scaleX;
+		//limb.image.scaleY = arm.scaleY;
+	}
+
+	createHead(head) {
+		let pos = head.body.position;
+		let limb = new Limb(this, pos.x, pos.y, head.texture.key.replace('head', 'dead'), null);
+		this.limbs.push(limb);
+		limb.image.scaleX = head.scaleX;
 	}
 
 

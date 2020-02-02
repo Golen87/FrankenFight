@@ -9,7 +9,7 @@ class Player {
 			Bodies.circle(0, 0, 130),
 			Bodies.circle(0, -200, 120),
 			Bodies.rectangle(0, 50, 150, 150),
-			Bodies.circle(0, 100, 10, { isSensor: true, label: 'feet' })
+			Bodies.circle(0, 100, 20, { isSensor: true, label: 'feet' })
 		]});
 
 
@@ -135,11 +135,13 @@ class Player {
 		this.torso.setFrictionAir(0.0005);
 		this.torso.setBounce(0.2);
 
+		this.grounded = false;
 
-		this.addArm();
-		this.addArm();
-		this.addLeg();
-		this.addLeg();
+
+		//this.addArm();
+		//this.addArm();
+		//this.addLeg();
+		//this.addLeg();
 
 
 		if (playerNumber == 1) {
@@ -159,14 +161,6 @@ class Player {
 
 		this.keyUp.on('down', this.onJump, this);
 		this.keyAttack.on('down', this.onAttack, this);
-
-		this.addArm();
-		this.addArm();
-		//this.addArm();
-		//this.addLeg();
-		//this.addLeg();
-		this.addLeg();
-		this.addLeg();
 
 		this.particles = scene.add.particles('blood');
 	}
@@ -206,11 +200,45 @@ class Player {
 		return (id == id1 || id == id2);
 	}
 
+	setGrounded(value) {
+		this.grounded = value;
+	}
+
+	isGrounded() {
+		return this.grounded;
+	}
+
 
 	/* Limb management */
 
+	isAlive() {
+		return this.head.visible;
+	}
+
 	isActive(part) {
 		return part.visible;
+	}
+
+	getActiveArms() {
+		const allArms = [this.armLeft1, this.armLeft2, this.armLeft3, this.armRight1, this.armRight2, this.armRight3];
+		return allArms.filter(this.isActive);
+	}
+
+	getActiveLegs() {
+		const allLegs = [this.legLeft1, this.legLeft2, this.legRight1, this.legRight2];
+		return allLegs.filter(this.isActive);
+	}
+
+	addLimb(limb) {
+		const frame = limb.image.frame.name;
+
+		if (limb.image.texture.key == "arms") {
+			return this.addArm(frame);
+		}
+		else if (limb.image.texture.key == "legs") {
+			return this.addLeg(frame);
+		}
+		return false;
 	}
 
 	addArm(frame) {
@@ -236,19 +264,7 @@ class Player {
 		return false;
 	}
 
-	removeArm() {
-		const allArms = [this.armLeft1, this.armLeft2, this.armLeft3, this.armRight1, this.armRight2, this.armRight3];
-		const arms = allArms.filter(this.isActive);
-
-		if (arms.length > 0) {
-			const arm = arms[Math.floor(Math.random()*arms.length)];
-			this.bleed(arm.x, arm.y);
-			arm.setVisible(false);
-			this.scene.createArm(arm);
-		}
-	}
-
-	addLeg() {
+	addLeg(frame) {
 		const leftLegs = [this.legLeft1, this.legLeft2];
 		const rightLegs = [this.legRight1, this.legRight2];
 
@@ -264,21 +280,57 @@ class Player {
 			if (!this.isActive(leg)) {
 				leg.setVisible(true);
 				leg.setFrame(Math.floor(Math.random()*7));
-				break;
+				leg.setFrame(frame);
+				return true;
 			}
+		}
+
+		return false;
+	}
+
+	removeLimb() {
+		const arms = this.getActiveArms();
+		const legs = this.getActiveLegs();
+
+		if (arms.length == 0 && legs.length == 0) {
+			this.removeHead();
+		}
+		else if (legs.length == 0 || (arms.length > 0 && Math.random() > 0.5)) {
+			this.removeArm();
+		}
+		else {
+			this.removeLeg();
+		}
+	}
+
+	removeArm() {
+		const arms = this.getActiveArms();
+
+		if (arms.length > 0) {
+			const arm = arms[Math.floor(Math.random()*arms.length)];
+			this.bleed(arm.x, arm.y);
+			arm.setVisible(false);
+			this.scene.createArm(arm);
 		}
 	}
 
 	removeLeg() {
-		const allLegs = [this.legLeft1, this.legLeft2, this.legRight1, this.legRight2];
-		const legs = allLegs.filter(this.isActive);
+		const legs = this.getActiveLegs();
 
 		if (legs.length > 0) {
 			const leg = legs[Math.floor(Math.random()*legs.length)];
 			this.bleed(leg.x, leg.y);
 			leg.setVisible(false);
+			this.scene.createLeg(leg);
 		}
-		
+	}
+
+	removeHead() {
+		if (this.head.visible) {
+			this.bleed(this.head.x, this.head.y);
+			this.head.setVisible(false);
+			this.scene.createHead(this.head);
+		}
 	}
 
 	bleed (x, y) {
@@ -298,6 +350,8 @@ class Player {
         	y: y
 		});
 	}
+
+
 	/* Update */
 
 	update(time, delta) {
@@ -313,24 +367,37 @@ class Player {
 		//this.armL.setRotation(-Math.sin(time/300));
 		//this.armR.setRotation(3.3-Math.sin(time/300));
 
-		if (this.keyUp.isDown) {
+		if (this.isAlive()) {
+			if (this.keyUp.isDown) {
+			}
+			if (this.keyDown.isDown) {
+				this.removeArm();
+			}
+			if (this.keyLeft.isDown) {
+				this.torso.setVelocityX(-8);
+			}
+			if (this.keyRight.isDown) {
+				this.torso.setVelocityX(8);
+			}
 		}
-		if (this.keyDown.isDown) {
-			this.removeArm();
-		}
-		if (this.keyLeft.isDown) {
-			this.torso.setVelocityX(-8);
-		}
-		if (this.keyRight.isDown) {
-			this.torso.setVelocityX(8);
+
+		this.head.setTint(0xffffff);
+		if (this.isGrounded()) {
+			this.head.setTint(0xffaaaa);
 		}
 	}
 
 	onJump() {
-		this.torso.setVelocity(0, -200);
+		if (!this.isAlive()) return;
+
+		if (this.isGrounded()) {
+			this.torso.setVelocity(0, -400);
+		}
 	}
 
 	onAttack() {
-		this.removeArm();
+		if (!this.isAlive()) return;
+
+		this.removeLimb();
 	}
 }

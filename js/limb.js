@@ -1,10 +1,9 @@
 class Limb {
-	constructor(scene, x, y, frame) {
+	constructor(scene, x, y, key, frame) {
 		this.scene = scene;
 		this.scale = 0.3;
 
-		this.image = scene.matter.add.image(0, 0, 'arms', 1);
-		this.image.setFrame(frame);
+		this.image = scene.matter.add.image(0, 0, key, frame);
 		this.image.setScale(this.scale);
 
 		let Bodies = Phaser.Physics.Matter.Matter.Bodies;
