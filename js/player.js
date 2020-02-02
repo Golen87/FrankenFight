@@ -159,6 +159,16 @@ class Player {
 
 		this.keyUp.on('down', this.onJump, this);
 		this.keyAttack.on('down', this.onAttack, this);
+
+		this.addArm();
+		this.addArm();
+		//this.addArm();
+		//this.addLeg();
+		//this.addLeg();
+		this.addLeg();
+		this.addLeg();
+
+		this.particles = scene.add.particles('blood');
 	}
 
 	addJointPlus(bodyA, offsetA, bodyB, offsetB, offsetA2, offsetB2, stiffnessFactor=1) {
@@ -173,6 +183,7 @@ class Player {
 
 		this.addJoint(bodyA, offsetA, bodyB, offsetB, this.stiffness);
 		this.addJoint(bodyA, softOffsetA, bodyB, softOffsetB, this.softStiffness * stiffnessFactor);
+	
 	}
 
 	addJoint(bodyA, offsetA, bodyB, offsetB, stiffness) {
@@ -231,6 +242,7 @@ class Player {
 
 		if (arms.length > 0) {
 			const arm = arms[Math.floor(Math.random()*arms.length)];
+			this.bleed(arm.x, arm.y);
 			arm.setVisible(false);
 			this.scene.createArm(arm);
 		}
@@ -263,11 +275,29 @@ class Player {
 
 		if (legs.length > 0) {
 			const leg = legs[Math.floor(Math.random()*legs.length)];
+			this.bleed(leg.x, leg.y);
 			leg.setVisible(false);
 		}
+		
 	}
 
-
+	bleed (x, y) {
+		this.particles.createEmitter({
+			alpha: {start: 1, end: 0.5},
+			scale: {start: 0.4, end: 0.8},
+			gravityY: 200,
+			speedX: {min: -100, max: 100},
+			speedY: {min: -100, max: 300},
+			collideLeft: true,
+			collideRight: true,
+			angle: { min: -85, max: 95 },
+        	rotate: { min: -180, max: 180 },
+        	lifespan: { min: 300, max: 800 },
+        	maxParticles: 7,
+        	x: x,
+        	y: y
+		});
+	}
 	/* Update */
 
 	update(time, delta) {
@@ -286,6 +316,7 @@ class Player {
 		if (this.keyUp.isDown) {
 		}
 		if (this.keyDown.isDown) {
+			this.removeArm();
 		}
 		if (this.keyLeft.isDown) {
 			this.torso.setVelocityX(-8);
