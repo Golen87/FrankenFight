@@ -136,7 +136,7 @@ class Player {
 		this.torso.setBounce(0.2);
 
 		this.grounded = false;
-
+		this.gameOver = false;
 
 		//this.addArm();
 		//this.addArm();
@@ -150,6 +150,7 @@ class Player {
 			this.keyLeft = scene.input.keyboard.addKey('A');
 			this.keyRight = scene.input.keyboard.addKey('D');
 			this.keyAttack = scene.input.keyboard.addKey('E');
+			this.gameOverTag = 'win2';
 		}
 		else {
 			this.keyUp = scene.input.keyboard.addKey('UP');
@@ -157,13 +158,18 @@ class Player {
 			this.keyLeft = scene.input.keyboard.addKey('LEFT');
 			this.keyRight = scene.input.keyboard.addKey('RIGHT');
 			this.keyAttack = scene.input.keyboard.addKey('SPACE');
+			this.gameOverTag = 'win1';
 		}
+
+		let restart = scene.input.keyboard.addKey('ESC');
+		restart.on('down', function (event) { 
+			scene.scene.start("PreloadScene");
+		});
 
 		this.keyUp.on('down', this.onJump, this);
 		this.keyAttack.on('down', this.onAttack, this);
 
 		this.particles = scene.add.particles('blood');
-
 		this.jump1 = scene.sound.add('toss', {'volume': 0.3});
 		this.jump2 = scene.sound.add('toss_soft', {'volume': 0.3});
 		this.drip1 = scene.sound.add('drip1');
@@ -335,6 +341,16 @@ class Player {
 			this.bleed(this.head.x, this.head.y);
 			this.head.setVisible(false);
 			this.scene.createHead(this.head);
+			if (!this.gameOver) {
+				// Display word "Game Over" at center of the screen game
+				let gameOver = this.scene.add.image(this.scene.cameras.main.displayWidth / 2,
+					this.scene.cameras.main.displayHeight / 2, this.gameOverTag);
+				// Set z-index just in case your text show behind the background.
+				gameOver.setDepth(1);
+				gameOver.setScale(0.7, 0.7);
+				this.gameOver = true;
+			}
+			
 		}
 	}
 
@@ -374,11 +390,14 @@ class Player {
 		//this.armL.setRotation(-Math.sin(time/300));
 		//this.armR.setRotation(3.3-Math.sin(time/300));
 
-		if (this.isAlive()) {
+		if (this.isAlive() && !this.gameOver) {
 			if (this.keyUp.isDown) {
 			}
 			if (this.keyDown.isDown) {
-				this.removeArm();
+				if (this.gameOver) {
+					console.log("test")
+				this.scene.restart();
+			}
 			}
 			if (this.keyLeft.isDown) {
 				this.torso.setVelocityX(-8);
