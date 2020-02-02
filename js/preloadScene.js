@@ -23,7 +23,9 @@ class PreloadScene extends Phaser.Scene {
 		this.load.image('dead2', 'assets/sprites/dead2.png');
 		this.load.image('head', 'assets/sprites/head.png');
 		this.load.image('platform', 'assets/sprites/platform.png');
-		this.load.image('blood', 'assets/sprites/blood.png')
+		this.load.image('blood', 'assets/sprites/blood.png');
+		this.load.image('win1', 'assets/sprites/win1.png');
+		this.load.image('win2', 'assets/sprites/win2.png');
 
 		//this.load.audio('clank', 'assets/audio/gameplay/clank.wav');
 		this.load.audio('crackle1', 'assets/audio/gameplay/crackle1.ogg');

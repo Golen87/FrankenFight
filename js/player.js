@@ -146,7 +146,7 @@ class Player {
 		this.grounded = false;
 		this.maxHealth = 10;
 		this.health = this.maxHealth;
-
+		this.gameOver = false;
 
 		//this.addArm();
 		//this.addArm();
@@ -160,6 +160,7 @@ class Player {
 			this.keyLeft = scene.input.keyboard.addKey('A');
 			this.keyRight = scene.input.keyboard.addKey('D');
 			this.keyAttack = scene.input.keyboard.addKey('E');
+			this.gameOverTag = 'win2';
 		}
 		else {
 			this.keyUp = scene.input.keyboard.addKey('UP');
@@ -167,7 +168,13 @@ class Player {
 			this.keyLeft = scene.input.keyboard.addKey('LEFT');
 			this.keyRight = scene.input.keyboard.addKey('RIGHT');
 			this.keyAttack = scene.input.keyboard.addKey('SPACE');
+			this.gameOverTag = 'win1';
 		}
+
+		let restart = scene.input.keyboard.addKey('ESC');
+		restart.on('down', function (event) { 
+			scene.scene.start("PreloadScene");
+		});
 
 		this.keyUp.on('down', this.onJump, this);
 		this.keyAttack.on('down', this.onAttack, this);
@@ -385,6 +392,16 @@ class Player {
 			this.crow.play();
 			this.head.setVisible(false);
 			this.scene.createHead(this.head);
+			if (!this.gameOver) {
+				// Display word "Game Over" at center of the screen game
+				let gameOver = this.scene.add.image(this.scene.cameras.main.displayWidth / 2,
+					this.scene.cameras.main.displayHeight / 2, this.gameOverTag);
+				// Set z-index just in case your text show behind the background.
+				gameOver.setDepth(1);
+				gameOver.setScale(0.7, 0.7);
+				this.gameOver = true;
+			}
+			
 		}
 	}
 
@@ -425,11 +442,14 @@ class Player {
 
 		let speed = 4 * (1 + this.getActiveLegs().length);
 
-		if (this.isAlive()) {
+		if (this.isAlive() && !this.gameOver) {
 			if (this.keyUp.isDown) {
 			}
 			if (this.keyDown.isDown) {
-				this.removeArm();
+				if (this.gameOver) {
+					console.log("test")
+				this.scene.restart();
+			}
 			}
 			if (this.keyLeft.isDown) {
 				this.torso.setVelocityX(-speed);
