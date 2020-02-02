@@ -6,113 +6,118 @@ class Player {
 
 		let Bodies = Phaser.Physics.Matter.Matter.Bodies;
 		let compoundBody = Phaser.Physics.Matter.Matter.Body.create({parts: [
-			Bodies.circle(0, 0, 130*this.scale),
-			Bodies.circle(0, -200, 120*this.scale),
-			Bodies.rectangle(0, 50, 120, 150)
+			Bodies.circle(0, 0, 130),
+			Bodies.circle(0, -200, 120),
+			Bodies.rectangle(0, 50, 150, 150),
+			Bodies.circle(0, 100, 10, { isSensor: true, label: 'feet' })
 		]});
 
 
-		this.legLeft1 = scene.matter.add.image(x, y, 'legs', 0, {isSensor: true, density: 0.00001});
-		this.legLeft2 = scene.matter.add.image(x, y, 'legs', 0, {isSensor: true, density: 0.00001});
-		this.legRight1 = scene.matter.add.image(x, y, 'legs', 0, {isSensor: true, density: 0.00001});
-		this.legRight2 = scene.matter.add.image(x, y, 'legs', 0, {isSensor: true, density: 0.00001});
-		this.armLeft3 = scene.matter.add.image(x, y, 'arms', 0, {isSensor: true, density: 0.00001});
-		this.armLeft2 = scene.matter.add.image(x, y, 'arms', 0, {isSensor: true, density: 0.00001});
-		this.armLeft1 = scene.matter.add.image(x, y, 'arms', 0, {isSensor: true, density: 0.00001});
-		this.body = scene.matter.add.image(x, y, 'body1', 0, {density: 10});
-		this.armRight3 = scene.matter.add.image(x, y, 'arms', 0, {isSensor: true, density: 0.00001});
-		this.armRight2 = scene.matter.add.image(x, y, 'arms', 0, {isSensor: true, density: 0.00001});
-		this.armRight1 = scene.matter.add.image(x, y, 'arms', 0, {isSensor: true, density: 0.00001});
-		this.head = scene.matter.add.image(x, y, 'head1', 0, {isSensor: true, density: 0.00001});
-		this.balls = scene.matter.add.image(x, y, 'circle', 0, {isSensor: true, density: 0.02});
+		const frame = playerNumber-1;
+		this.legLeft1 = scene.matter.add.image(x, y, 'legs', frame, {isSensor: true, density: 0.00001});
+		this.legLeft2 = scene.matter.add.image(x, y, 'legs', frame, {isSensor: true, density: 0.00001});
+		this.legRight1 = scene.matter.add.image(x, y, 'legs', frame, {isSensor: true, density: 0.00001});
+		this.legRight2 = scene.matter.add.image(x, y, 'legs', frame, {isSensor: true, density: 0.00001});
+		this.armLeft3 = scene.matter.add.image(x, y, 'arms', frame, {isSensor: true, density: 0.00001});
+		this.armLeft2 = scene.matter.add.image(x, y, 'arms', frame, {isSensor: true, density: 0.00001});
+		this.armLeft1 = scene.matter.add.image(x, y, 'arms', frame, {isSensor: true, density: 0.00001});
+		this.torso = scene.matter.add.image(x, y, 'body'+playerNumber, 0, {density: 10});
+		this.head = scene.matter.add.image(x, y, 'head'+playerNumber, 0, {isSensor: true, density: 0.00001});
+		this.armRight3 = scene.matter.add.image(x, y, 'arms', frame, {isSensor: true, density: 0.00001});
+		this.armRight2 = scene.matter.add.image(x, y, 'arms', frame, {isSensor: true, density: 0.00001});
+		this.armRight1 = scene.matter.add.image(x, y, 'arms', frame, {isSensor: true, density: 0.00001});
+		this.balls = scene.matter.add.image(x, y, 'circle', 0, {isSensor: true, density: 0.3});
 
-		this.balls.visible = false;
+		this.balls.setVisible(false);
+		//this.balls.body.density = 0.001;
 
-		//this.armRight.visible = false;
-		//this.armRight.setTexture('arm_right2');
+		this.torso.setExistingBody(compoundBody);
+		this.torso.setPosition(x, y);
+		this.torso.setOrigin(0.5);
+		this.torso.body.obj = scene.OBJ.PLAYER;
 
-		this.body.setExistingBody(compoundBody);
-		this.body.setPosition(x, y);
-		this.body.setOrigin(0.5);
-
-		const bodyParts = [this.legLeft1, this.legLeft2, this.legRight1, this.legRight2, this.armLeft3, this.armLeft2, this.armLeft1, this.body, this.armRight3, this.armRight2, this.armRight1, this.head, this.balls];
+		const bodyParts = [this.legLeft1, this.legLeft2, this.legRight1, this.legRight2, this.armLeft3, this.armLeft2, this.armLeft1, this.torso, this.armRight3, this.armRight2, this.armRight1, this.head, this.balls];
 		const direction = (playerNumber == 1) ? -1 : 1;
 		for (let part of bodyParts) {
 			part.setScale(direction * this.scale, this.scale);
+			part.setCollisionCategory(0);
+			part.setCollidesWith(0);
 		}
+		this.torso.setCollisionCategory(scene.GROUP.GROUND);
+		this.torso.setCollidesWith(scene.GROUP.GROUND);
 
 		let limbs = [this.armLeft1, this.armLeft2, this.armLeft3, this.armRight1, this.armRight2, this.armRight3, this.legLeft1, this.legLeft2, this.legRight1, this.legRight2];
 		for (let part of limbs) {
 			part.setVisible(false);
 		}
 
-		this.stiffness = 0.3;
-		this.softStiffness = 0.004;
+		this.stiffness = 0.5;
+		this.softStiffness = 0.008;
 
 		// Left arms
 		this.addJointPlus(
-			this.body, {x:47, y:49},
+			this.torso, {x:47, y:49},
 			this.armLeft1, {x:50, y:75},
 			{x:200, y:0}, {x:-400-50, y:-120}
 		);
 		this.addJointPlus(
-			this.body, {x:25, y:90},
+			this.torso, {x:25, y:90},
 			this.armLeft2, {x:50, y:75},
 			{x:200, y:0}, {x:-400-20, y:-20}
 		);
 		this.addJointPlus(
-			this.body, {x:21, y:143},
+			this.torso, {x:21, y:143},
 			this.armLeft3, {x:50, y:75},
 			{x:200, y:0}, {x:-400+20, y:60}
 		);
 		// // Right arms
 		this.addJointPlus(
-			this.body, {x:200, y:75},
+			this.torso, {x:200, y:75},
 			this.armRight1, {x:50, y:75},
 			{x:200, y:0}, {x:20, y:-120}
 		);
 		this.addJointPlus(
-			this.body, {x:223, y:122},
+			this.torso, {x:223, y:122},
 			this.armRight2, {x:50, y:75},
 			{x:200, y:0}, {x:30, y:-30}
 		);
 		this.addJointPlus(
-			this.body, {x:222, y:176},
+			this.torso, {x:222, y:176},
 			this.armRight3, {x:50, y:75},
 			{x:200, y:0}, {x:20, y:60}
 		);
 		// Left legs
 		this.addJointPlus(
-			this.body, {x:40, y:220},
+			this.torso, {x:40, y:220},
 			this.legLeft1, {x:100, y:50},
 			{x:0, y:150}, {x:-50, y:20}
 		);
 		this.addJointPlus(
-			this.body, {x:90, y:235},
+			this.torso, {x:90, y:235},
 			this.legLeft2, {x:100, y:50},
 			{x:0, y:150}, {x:-20, y:20}
 		);
 		// Right legs
 		this.addJointPlus(
-			this.body, {x:225, y:228},
+			this.torso, {x:225, y:228},
 			this.legRight1, {x:100, y:50},
 			{x:0, y:150}, {x:40, y:20}
 		);
 		this.addJointPlus(
-			this.body, {x:173, y:239},
+			this.torso, {x:173, y:239},
 			this.legRight2, {x:100, y:50},
 			{x:0, y:150}, {x:10, y:20}
 		);
 		// Head
 		this.addJointPlus(
-			this.body, {x:132, y:24},
+			this.torso, {x:132, y:24},
 			this.head, {x:180, y:325},
 			{x:0, y:-280}, {x:0, y:-50},
 			5
 		);
 		// Bottom weight
 		this.addJoint(
-			this.body, {x:130, y:250},
+			this.torso, {x:130, y:250},
 			this.balls, {x:50, y:50}
 		);
 
@@ -126,9 +131,15 @@ class Player {
 			//part.scaleX *= -1;
 		}
 
-		this.body.setFriction(0.05);
-		this.body.setFrictionAir(0.0005);
-		this.body.setBounce(0.2);
+		this.torso.setFriction(0.05);
+		this.torso.setFrictionAir(0.0005);
+		this.torso.setBounce(0.2);
+
+
+		this.addArm();
+		this.addArm();
+		this.addLeg();
+		this.addLeg();
 
 
 		if (playerNumber == 1) {
@@ -146,13 +157,8 @@ class Player {
 			this.keyAttack = scene.input.keyboard.addKey('SPACE');
 		}
 
-		this.addArm();
-		this.addArm();
-		//this.addArm();
-		//this.addLeg();
-		//this.addLeg();
-		this.addLeg();
-		this.addLeg();
+		this.keyUp.on('down', this.onJump, this);
+		this.keyAttack.on('down', this.onAttack, this);
 	}
 
 	addJointPlus(bodyA, offsetA, bodyB, offsetB, offsetA2, offsetB2, stiffnessFactor=1) {
@@ -182,6 +188,13 @@ class Player {
 		});
 	}
 
+	isBody(pair) {
+		const id = this.torso.body.id;
+		const id1 = pair.bodyA.parent.id;
+		const id2 = pair.bodyB.parent.id;
+		return (id == id1 || id == id2);
+	}
+
 
 	/* Limb management */
 
@@ -189,7 +202,7 @@ class Player {
 		return part.visible;
 	}
 
-	addArm() {
+	addArm(frame) {
 		const leftArms = [this.armLeft1, this.armLeft2, this.armLeft3];
 		const rightArms = [this.armRight1, this.armRight2, this.armRight3];
 
@@ -204,10 +217,12 @@ class Player {
 		for (const arm of arms) {
 			if (!this.isActive(arm)) {
 				arm.setVisible(true);
-				arm.setFrame(Math.floor(Math.random()*8));
-				break;
+				arm.setFrame(frame);
+				return true;
 			}
 		}
+
+		return false;
 	}
 
 	removeArm() {
@@ -217,6 +232,7 @@ class Player {
 		if (arms.length > 0) {
 			const arm = arms[Math.floor(Math.random()*arms.length)];
 			arm.setVisible(false);
+			this.scene.createArm(arm);
 		}
 	}
 
@@ -268,18 +284,22 @@ class Player {
 		//this.armR.setRotation(3.3-Math.sin(time/300));
 
 		if (this.keyUp.isDown) {
-			this.body.setVelocity(0, -10);
 		}
 		if (this.keyDown.isDown) {
 		}
 		if (this.keyLeft.isDown) {
-			this.body.setVelocityX(-8);
+			this.torso.setVelocityX(-8);
 		}
 		if (this.keyRight.isDown) {
-			this.body.setVelocityX(8);
+			this.torso.setVelocityX(8);
 		}
-		if (this.keyAttack.isDown) {
-			this.addArm();
-		}
+	}
+
+	onJump() {
+		this.torso.setVelocity(0, -200);
+	}
+
+	onAttack() {
+		this.removeArm();
 	}
 }
