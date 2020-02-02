@@ -42,9 +42,17 @@ class Player {
 			part.setScale(direction * this.scale, this.scale);
 			part.setCollisionCategory(0);
 			part.setCollidesWith(0);
+			part.body.owner = this;
 		}
-		this.torso.setCollisionCategory(scene.GROUP.GROUND);
-		this.torso.setCollidesWith(scene.GROUP.GROUND);
+		this.torso.setCollisionCategory(scene.GROUP.GROUND | scene.GROUP.TORSO);
+		this.torso.setCollidesWith(scene.GROUP.GROUND | scene.GROUP.ARMS);
+
+		for (let arm of this.getActiveArms()) {
+			arm.setVisible(false);
+			arm.setCollisionCategory(scene.GROUP.ARMS);
+			arm.setCollidesWith(scene.GROUP.TORSO);
+			arm.body.obj = scene.OBJ.ARMS;
+		}
 
 		let limbs = [this.armLeft1, this.armLeft2, this.armLeft3, this.armRight1, this.armRight2, this.armRight3, this.legLeft1, this.legLeft2, this.legRight1, this.legRight2];
 		for (let part of limbs) {
@@ -136,6 +144,8 @@ class Player {
 		this.torso.setBounce(0.2);
 
 		this.grounded = false;
+		this.maxHealth = 10;
+		this.health = this.maxHealth;
 
 
 		//this.addArm();
@@ -164,10 +174,39 @@ class Player {
 
 		this.particles = scene.add.particles('blood');
 
-		this.jump1 = scene.sound.add('toss', {'volume': 0.3});
-		this.jump2 = scene.sound.add('toss_soft', {'volume': 0.3});
-		this.drip1 = scene.sound.add('drip1');
-		this.drip2 = scene.sound.add('drip2');
+		this.jump1 = scene.sound.add('toss', {'volume': 0.5});
+		this.jump2 = scene.sound.add('toss_soft', {'volume': 0.5});
+		this.crow = scene.sound.add('crow');
+		this.drip = [
+			scene.sound.add('drip1'),
+			scene.sound.add('drip2'),
+		];
+		this.detach = [
+			scene.sound.add('detach1'),
+			scene.sound.add('detach2'),
+			scene.sound.add('detach3'),
+		];
+		this.punch = [
+			scene.sound.add('thud1'),
+			scene.sound.add('thud2'),
+			scene.sound.add('thud3'),
+			scene.sound.add('crunch1'),
+			scene.sound.add('crunch2'),
+			scene.sound.add('crunch3'),
+			scene.sound.add('crunch4'),
+			scene.sound.add('crunch5'),
+			scene.sound.add('crunch6'),
+		];
+		this.pickup = [
+			scene.sound.add('shank1'),
+			scene.sound.add('shank2'),
+			scene.sound.add('shank3'),
+		];
+		this.walking = [
+			scene.sound.add('crackle1', {'volume': 0.5}),
+			scene.sound.add('crackle2', {'volume': 0.5}),
+			scene.sound.add('crackle3', {'volume': 0.5}),
+		];
 	}
 
 	addJointPlus(bodyA, offsetA, bodyB, offsetB, offsetA2, offsetB2, stiffnessFactor=1) {
@@ -211,6 +250,13 @@ class Player {
 
 	isGrounded() {
 		return this.grounded;
+	}
+
+	playSound(sounds) {
+		const sound = sounds[Math.floor(Math.random()*sounds.length)];
+		if (!sound.isPlaying) {
+			sound.play();
+		}
 	}
 
 
@@ -262,6 +308,7 @@ class Player {
 			if (!this.isActive(arm)) {
 				arm.setVisible(true);
 				arm.setFrame(frame);
+				this.playSound(this.pickup);
 				return true;
 			}
 		}
@@ -284,8 +331,8 @@ class Player {
 		for (const leg of legs) {
 			if (!this.isActive(leg)) {
 				leg.setVisible(true);
-				leg.setFrame(Math.floor(Math.random()*7));
 				leg.setFrame(frame);
+				this.playSound(this.pickup);
 				return true;
 			}
 		}
@@ -306,6 +353,8 @@ class Player {
 		else {
 			this.removeLeg();
 		}
+
+		this.playSound(this.detach);
 	}
 
 	removeArm() {
@@ -333,6 +382,7 @@ class Player {
 	removeHead() {
 		if (this.head.visible) {
 			this.bleed(this.head.x, this.head.y);
+			this.crow.play();
 			this.head.setVisible(false);
 			this.scene.createHead(this.head);
 		}
@@ -354,8 +404,7 @@ class Player {
         	x: x,
         	y: y
 		});
-		const bleedEffects = [this.drip1, this.drip2];
-		bleedEffects[Math.floor(Math.random()*bleedEffects.length)].play();
+		this.playSound(this.drip);
 	}
 
 
@@ -374,6 +423,8 @@ class Player {
 		//this.armL.setRotation(-Math.sin(time/300));
 		//this.armR.setRotation(3.3-Math.sin(time/300));
 
+		let speed = 4 * (1 + this.getActiveLegs().length);
+
 		if (this.isAlive()) {
 			if (this.keyUp.isDown) {
 			}
@@ -381,16 +432,15 @@ class Player {
 				this.removeArm();
 			}
 			if (this.keyLeft.isDown) {
-				this.torso.setVelocityX(-8);
+				this.torso.setVelocityX(-speed);
+				this.playSound(this.walking);
 			}
 			if (this.keyRight.isDown) {
-				this.torso.setVelocityX(8);
+				this.torso.setVelocityX(speed);
+				this.playSound(this.walking);
 			}
-		}
 
-		this.head.setTint(0xffffff);
-		if (this.isGrounded()) {
-			this.head.setTint(0xffaaaa);
+			this.health = Math.min(this.health + 0.1*delta/1000, this.maxHealth);
 		}
 	}
 
@@ -411,6 +461,19 @@ class Player {
 	onAttack() {
 		if (!this.isAlive()) return;
 
-		this.removeLimb();
+		//this.removeLimb();
+	}
+
+	takeDamage() {
+		if (!this.isAlive()) return;
+
+		this.playSound(this.punch);
+		this.bleed(this.torso.x, this.torso.y);
+
+		this.health -= 1;
+		if (this.health <= 0) {
+			this.removeLimb();
+			this.health = this.maxHealth;
+		}
 	}
 }

@@ -27,7 +27,7 @@ class Limb {
 		this.image.body.obj = scene.OBJ.LIMB;
 
 
-		this.pickTimer = 0.5;
+		this.pickTimer = 1.0;
 	}
 
 	destroy() {

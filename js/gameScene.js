@@ -7,13 +7,15 @@ class GameScene extends Phaser.Scene {
 		this.matter.world.setBounds(30, 30, this.W-60, this.H-60, 1000);
 		this.GROUP = {
 			GROUND: 1 << 0, // Default
-			//ITEMS: 1 << 1,
+			TORSO: 1 << 1,
+			ARMS: 1 << 2,
 		};
 		this.OBJ = {
 			BORDER:	0,
 			GROUND:	1,
 			PLAYER:	2,
-			LIMB:	3,
+			ARMS:	3,
+			LIMB:	4,
 		};
 
 		let background = this.add.image(this.CX, this.CY, 'background');
@@ -52,7 +54,7 @@ class GameScene extends Phaser.Scene {
 				const pair = event.pairs[i];
 				const objA = pair.bodyA.parent.obj || 0;
 				const objB = pair.bodyB.parent.obj || 0;
-				const names = ["border", "ground", "player", "limb"];
+				const names = ["border", "ground", "player", "arms", "limb"];
 				//console.log(names[objA], names[objB]);
 				//const bodyA = event.pairs[i].bodyA;
 				//const bodyB = event.pairs[i].bodyB;
@@ -78,6 +80,22 @@ class GameScene extends Phaser.Scene {
 					}
 				}
 
+				if (objA == this.OBJ.PLAYER && objB == this.OBJ.ARMS || objA == this.OBJ.ARMS && objB == this.OBJ.PLAYER) {
+					const playerA = pair.bodyA.parent.owner;
+					const playerB = pair.bodyB.parent.owner;
+					const gameObjA = pair.bodyA.parent.gameObject;
+					const gameObjB = pair.bodyB.parent.gameObject;
+
+					if (playerA != playerB) {
+						if (objA == this.OBJ.ARMS && gameObjA.visible) {
+							playerB.takeDamage();
+						}
+						else if (objB == this.OBJ.ARMS && gameObjB.visible) {
+							playerA.takeDamage();
+						}
+					}
+				}
+
 				if (pair.isSensor) {
 					if (objA == this.OBJ.GROUND && objB == this.OBJ.PLAYER) {
 						for (const player of [this.player1, this.player2]) {
@@ -87,12 +105,6 @@ class GameScene extends Phaser.Scene {
 						}
 					}
 				}
-				//if (objA == this.OBJ.GROUND && objB == this.OBJ.PLAYER) {
-				//	console.log(pair.bodyB.gameObject.label);
-				//}
-
-				//bodyA.gameObject.setTint(0xff0000);
-				//bodyB.gameObject.setTint(0x00ff00);
 			}
 		}, this);
 
